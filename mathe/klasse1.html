@@ -253,7 +253,7 @@
         var qs = [], emojis = ['\uD83C\uDF4E','\u2B50','\uD83D\uDC38','\u26BD','\uD83C\uDF38','\uD83C\uDF08'];
         for (var i = 0; i < 5; i++) {
           var n = rnd(3, 12), e = pick(emojis);
-          qs.push({ emoji:e, text:repeatStr(e,n)+'\n\nWie viele siehst du?', hint:'Z\u00e4hle genau!', answer:n, type:'mc' });
+          qs.push({ emoji:'', text:repeatStr(e,n)+'\n\nWie viele siehst du?', hint:'Z\u00e4hle genau!', answer:n, type:'mc' });
         }
         for (var i = 0; i < 5; i++) {
           var st = rnd(1,14), g = rnd(0,4);
@@ -299,8 +299,11 @@
     { id:'tausch', name:'Tauschaufgaben', icon:'\u21D4', color:'purple', accent:'#AB47BC',
       make: function() {
         var qs = [];
-        for (var i = 0; i < 10; i++) {
+        var tries = 0;
+        while (qs.length < 10 && tries < 100) {
+          tries++;
           var a=rnd(1,9), b=rnd(1,9);
+          if (a === b) continue;
           qs.push({ emoji:'\u21D4', text:a+' + '+b+' = '+(a+b)+'\n\n'+b+' + '+a+' = ?', hint:'Das Ergebnis bleibt gleich!', answer:a+b, type:'mc' });
         }
         return shuffle(qs).slice(0,8);
@@ -308,16 +311,18 @@
     },
     { id:'zwerge', name:'Zwerg & Riese', icon:'\uD83E\uDD84', color:'sky', accent:'#29B6F6',
       make: function() {
-        var qs = [], pairs=[[2,3],[1,5],[4,3],[2,6],[3,4],[2,5],[3,3],[1,6]];
-        shuffle(pairs).slice(0,5).forEach(function(p) {
+        var qs = [], pairs=[[2,3],[1,5],[4,3],[2,6],[3,4],[2,5],[3,3],[1,6],[4,2],[1,7]];
+        shuffle(pairs).slice(0,4).forEach(function(p) {
           var a=p[0],b=p[1];
-          qs.push({ emoji:'\uD83E\uDD84', text:a+' + '+b+' = '+(a+b)+'\n\n'+(a*10)+' + '+(b*10)+' = ?', hint:'Riesenaufgabe!', answer:(a+b)*10, type:'mc' });
+          qs.push({ emoji:'\uD83E\uDDD2', text:'Zwergenaufgabe:\n\n'+a+' + '+b+' = ?', hint:'Erst die kleine Aufgabe l\u00f6sen!', answer:a+b, type:'input' });
+          qs.push({ emoji:'\uD83E\uDDD8', text:'Zwerge: '+a+' + '+b+' = '+(a+b)+'\n\nRiesen: '+(a*10)+' + '+(b*10)+' = ?', hint:'Das gleiche Prinzip \u2013 nur gr\u00f6\u00dfer!', answer:(a+b)*10, type:'input' });
         });
         [[7,3],[8,5],[9,4]].forEach(function(p) {
           var a=p[0],b=p[1];
-          qs.push({ emoji:'\uD83E\uDD84', text:a+' \u2212 '+b+' = '+(a-b)+'\n\n'+(a*10)+' \u2212 '+(b*10)+' = ?', hint:'Riesen-Minusaufgabe!', answer:(a-b)*10, type:'mc' });
+          qs.push({ emoji:'\uD83E\uDDD2', text:'Zwergenaufgabe:\n\n'+a+' \u2212 '+b+' = ?', hint:'Erst die kleine Aufgabe l\u00f6sen!', answer:a-b, type:'input' });
+          qs.push({ emoji:'\uD83E\uDDD8', text:'Zwerge: '+a+' \u2212 '+b+' = '+(a-b)+'\n\nRiesen: '+(a*10)+' \u2212 '+(b*10)+' = ?', hint:'Das gleiche Prinzip \u2013 nur gr\u00f6\u00dfer!', answer:(a-b)*10, type:'input' });
         });
-        return shuffle(qs).slice(0,8);
+        return qs.slice(0,8);
       }
     },
     { id:'verliebt', name:'Verliebte Zahlen', icon:'\uD83D\uDC95', color:'berry', accent:'#F06292',
