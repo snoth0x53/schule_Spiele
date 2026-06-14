@@ -2,672 +2,191 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Mathe-Abenteuer – 1. Klasse</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schul-Spiele 🎓</title>
 <style>
   :root {
-    --sky: #4FC3F7; --sun: #FFD54F; --grass: #66BB6A;
-    --berry: #EF5350; --purple: #AB47BC; --ink: #1A237E;
-    --correct: #43A047; --wrong: #E53935; --accent: #4FC3F7; --r: 18px;
+    --ink: #1A237E;
+    --soft: #f0f4ff;
+    --r: 16px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, 'Segoe UI', Tahoma, sans-serif;
+    font-family: -apple-system, 'Segoe UI', sans-serif;
     background: linear-gradient(160deg, #e0f7fa 0%, #f3e5f5 100%);
     min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 12px; overflow-x: hidden;
-  }
-  #header {
-    width: 100%; max-width: 640px;
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  #title-bar { font-size: 1.3rem; font-weight: 800; color: var(--ink); }
-  #score-label {
-    font-size: 0.85rem; font-weight: 700; color: var(--purple);
-    background: white; border-radius: 20px; padding: 3px 10px;
-  }
-  #progress-wrap {
-    width: 100%; max-width: 640px; background: white;
-    border-radius: 20px; height: 10px; overflow: hidden; margin-bottom: 10px;
-  }
-  #progress-fill {
-    height: 100%; background: linear-gradient(90deg, var(--grass), var(--sky));
-    border-radius: 20px; transition: width 0.5s ease; width: 0%;
-  }
-  .screen { width: 100%; max-width: 640px; }
-  .hidden { display: none !important; }
-
-  /* TOPIC */
-  #topic-title { text-align: center; font-size: 1.6rem; font-weight: 900; color: var(--ink); margin-bottom: 6px; }
-  #topic-subtitle { text-align: center; color: #546E7A; font-size: 0.95rem; margin-bottom: 18px; }
-  #topic-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-  .topic-btn {
-    background: white; border: none; border-radius: var(--r); padding: 14px 10px;
-    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.07); position: relative; overflow: hidden;
-    width: calc(50% - 5px); transition: transform 0.15s; -webkit-transition: -webkit-transform 0.15s;
-  }
-  @media(min-width:400px){ .topic-btn { width: calc(33.33% - 7px); } }
-  @media(min-width:560px){ .topic-btn { width: calc(25% - 8px); } }
-  .topic-btn:active { transform: scale(0.95); }
-  .topic-btn .t-icon  { font-size: 2rem; }
-  .topic-btn .t-name  { font-size: 0.78rem; font-weight: 700; color: var(--ink); text-align: center; line-height: 1.2; }
-  .topic-btn .t-stars { font-size: 0.8rem; }
-  .topic-btn[data-color="sky"]    { border-top: 5px solid var(--sky); }
-  .topic-btn[data-color="sun"]    { border-top: 5px solid var(--sun); }
-  .topic-btn[data-color="grass"]  { border-top: 5px solid var(--grass); }
-  .topic-btn[data-color="berry"]  { border-top: 5px solid var(--berry); }
-  .topic-btn[data-color="purple"] { border-top: 5px solid var(--purple); }
-
-  /* GAME */
-  #topic-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  #back-btn {
-    background: white; border: none; border-radius: 50%; width: 40px; height: 40px;
-    font-size: 1.3rem; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  #topic-name-display { font-size: 1.1rem; font-weight: 800; color: var(--ink); }
-  #q-counter { margin-left: auto; font-size: 0.85rem; color: #78909C; font-weight: 700; white-space: nowrap; }
-  #question-card {
-    background: white; border-radius: 24px; padding: 22px 18px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.1); margin-bottom: 14px; min-height: 160px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; position: relative; overflow: hidden;
-  }
-  #question-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0;
-    height: 5px; background: var(--accent);
-  }
-  #question-emoji { font-size: 3rem; margin-bottom: 8px; line-height: 1; }
-  #question-text  { font-size: 1.5rem; font-weight: 700; color: var(--ink); line-height: 1.3; margin-bottom: 6px; white-space: pre-wrap; }
-  #question-hint  { font-size: 0.85rem; color: #78909C; font-style: italic; }
-
-  #answers-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-  .ans-btn {
-    background: white; border: 3px solid #E0E0E0; border-radius: var(--r);
-    padding: 14px 10px; font-size: 1.3rem; font-weight: 800; color: var(--ink);
-    cursor: pointer; min-height: 60px; display: flex; align-items: center;
-    justify-content: center; width: calc(50% - 5px);
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .ans-btn:active { opacity: 0.8; }
-  .ans-btn.correct { background: #E8F5E9; border-color: var(--correct); color: var(--correct); }
-  .ans-btn.wrong   { background: #FFEBEE; border-color: var(--wrong);   color: var(--wrong); }
-
-  #input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
-  #answer-input {
-    flex: 1; border: 3px solid #E0E0E0; border-radius: var(--r); padding: 14px 16px;
-    font-size: 1.6rem; font-weight: 800; color: var(--ink); text-align: center;
-    outline: none; background: white; -webkit-appearance: none; appearance: none;
-  }
-  #answer-input.correct { border-color: var(--correct); background: #E8F5E9; }
-  #answer-input.wrong   { border-color: var(--wrong);   background: #FFEBEE; }
-  #submit-btn {
-    background: var(--ink); color: white; border: none; border-radius: var(--r);
-    padding: 14px 20px; font-size: 1.2rem; cursor: pointer; font-weight: 800; white-space: nowrap;
+    padding: 24px 16px 48px;
   }
 
-  #numpad { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-  #numpad.visible { display: flex; }
-  .num-key {
-    background: white; border: 2px solid #E0E0E0; border-radius: 12px; padding: 14px;
-    font-size: 1.3rem; font-weight: 800; color: var(--ink); cursor: pointer;
-    text-align: center; width: calc(33.33% - 6px);
+  header {
+    text-align: center;
+    margin-bottom: 36px;
   }
-  .num-key:active { background: #E3F2FD; }
-  .num-key.del { background: #FFF3E0; }
-  .num-key.ok  { background: var(--ink); color: white; }
-  @media(min-width:500px){ #numpad { display: none !important; } }
-
-  #feedback {
-    border-radius: 20px; margin-bottom: 14px; padding: 16px;
-    text-align: center; font-size: 1.1rem; font-weight: 700; display: none;
+  header h1 {
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+    font-weight: 900;
+    color: var(--ink);
+    margin-bottom: 6px;
   }
-  #feedback.correct { background: #E8F5E9; color: var(--correct); display: block; }
-  #feedback.wrong   { background: #FFEBEE; color: var(--wrong);   display: block; }
-
-  #next-btn {
-    background: var(--ink); color: white; border: none; border-radius: var(--r);
-    padding: 16px 32px; font-size: 1.1rem; font-weight: 800; cursor: pointer;
-    width: 100%; display: none;
+  header p {
+    color: #546E7A;
+    font-size: 1rem;
   }
 
-  /* RESULT */
-  #result-screen { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  #result-card { background: white; border-radius: 24px; padding: 28px; box-shadow: 0 6px 24px rgba(0,0,0,0.1); width: 100%; text-align: center; }
-  #result-emoji  { font-size: 4rem; }
-  #result-title  { font-size: 1.8rem; font-weight: 900; color: var(--ink); margin: 10px 0 4px; }
-  #result-score  { font-size: 1.1rem; color: #546E7A; }
-  #result-stars  { font-size: 2rem; margin: 8px 0; }
-  #play-again-btn, #home-btn {
-    border: none; border-radius: var(--r); padding: 16px 28px;
-    font-size: 1.1rem; font-weight: 800; cursor: pointer; width: 100%;
+  .fach-section {
+    max-width: 700px;
+    margin: 0 auto 32px;
   }
-  #play-again-btn { background: var(--ink); color: white; }
-  #home-btn { background: white; color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-top: 8px; }
+  .fach-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid currentColor;
+  }
+  .karten-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .karte {
+    background: white;
+    border-radius: var(--r);
+    padding: 18px 14px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .karte:active { transform: scale(0.97); }
+  .karte .icon  { font-size: 2.2rem; line-height: 1; }
+  .karte .name  { font-size: 0.9rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
+  .karte .klasse { font-size: 0.75rem; color: #78909C; }
+  .karte.neu::after {
+    content: 'Neu';
+    position: absolute;
+    top: 8px; right: 8px;
+    background: #EF5350;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 20px;
+  }
 
-  .confetti-piece {
-    position: fixed; pointer-events: none; z-index: 1000;
-    animation: fall 1.2s ease-in forwards;
-    -webkit-animation: fall 1.2s ease-in forwards;
+  /* Farben pro Fach */
+  .mathe   .karte { border-top: 5px solid #4FC3F7; }
+  .deutsch .karte { border-top: 5px solid #66BB6A; }
+  .sachkunde .karte { border-top: 5px solid #FFD54F; }
+
+  .mathe    .fach-title { color: #1565C0; }
+  .deutsch  .fach-title { color: #2E7D32; }
+  .sachkunde .fach-title { color: #F57F17; }
+
+  /* Platzhalter-Karte (kommt bald) */
+  .karte.bald {
+    background: #f8f8f8;
+    border: 2px dashed #ddd;
+    box-shadow: none;
+    pointer-events: none;
   }
-  @keyframes fall {
-    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
-  @-webkit-keyframes fall {
-    0%   { -webkit-transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    100% { -webkit-transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  .karte.bald .name  { color: #aaa; }
+  .karte.bald .klasse { color: #ccc; }
+
+  footer {
+    text-align: center;
+    color: #90A4AE;
+    font-size: 0.8rem;
+    margin-top: 48px;
   }
 </style>
 </head>
 <body>
 
-<div id="header">
-  <div id="title-bar">🧮 Mathe-Abenteuer</div>
-  <div id="score-label">0 Punkte</div>
-</div>
-<div id="progress-wrap"><div id="progress-fill"></div></div>
+<header>
+  <h1>🎓 Schul-Spiele</h1>
+  <p>Lernspiele für die Grundschule – einfach antippen und loslegen!</p>
+</header>
 
-<div id="topic-screen" class="screen">
-  <div id="topic-title">Wähle ein Thema! 🎯</div>
-  <div id="topic-subtitle">Übe und sammle Sterne!</div>
-  <div id="topic-grid"></div>
-</div>
+<!-- MATHE -->
+<div class="fach-section mathe">
+  <div class="fach-title">🧮 Mathematik</div>
+  <div class="karten-grid">
 
-<div id="game-screen" class="screen hidden">
-  <div id="topic-header">
-    <button id="back-btn">←</button>
-    <div id="topic-name-display"></div>
-    <div id="q-counter"></div>
+    <a class="karte neu" href="mathe/klasse1.html">
+      <span class="icon">➕</span>
+      <span class="name">Mathe-Abenteuer</span>
+      <span class="klasse">1. Klasse</span>
+    </a>
+
+    <div class="karte bald">
+      <span class="icon">🔢</span>
+      <span class="name">Mathe-Abenteuer</span>
+      <span class="klasse">2. Klasse – bald</span>
+    </div>
+
+    <div class="karte bald">
+      <span class="icon">✖️</span>
+      <span class="name">Einmaleins</span>
+      <span class="klasse">3. Klasse – bald</span>
+    </div>
+
   </div>
-  <div id="question-card">
-    <div id="question-emoji"></div>
-    <div id="question-text"></div>
-    <div id="question-hint"></div>
-  </div>
-  <div id="answers-grid"></div>
-  <div id="input-row" class="hidden">
-    <input id="answer-input" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="?"/>
-    <button id="submit-btn">OK ✓</button>
-  </div>
-  <div id="numpad">
-    <div class="num-key" data-key="1">1</div>
-    <div class="num-key" data-key="2">2</div>
-    <div class="num-key" data-key="3">3</div>
-    <div class="num-key" data-key="4">4</div>
-    <div class="num-key" data-key="5">5</div>
-    <div class="num-key" data-key="6">6</div>
-    <div class="num-key" data-key="7">7</div>
-    <div class="num-key" data-key="8">8</div>
-    <div class="num-key" data-key="9">9</div>
-    <div class="num-key del" data-key="del">⌫</div>
-    <div class="num-key" data-key="0">0</div>
-    <div class="num-key ok" data-key="ok">✓</div>
-  </div>
-  <div id="feedback"></div>
-  <button id="next-btn">Weiter →</button>
 </div>
 
-<div id="result-screen" class="screen hidden">
-  <div id="result-card">
-    <div id="result-emoji">🏆</div>
-    <div id="result-title"></div>
-    <div id="result-score"></div>
-    <div id="result-stars"></div>
+<!-- DEUTSCH -->
+<div class="fach-section deutsch">
+  <div class="fach-title">📖 Deutsch</div>
+  <div class="karten-grid">
+
+    <div class="karte bald">
+      <span class="icon">🔤</span>
+      <span class="name">Buchstaben & Laute</span>
+      <span class="klasse">1. Klasse – bald</span>
+    </div>
+
+    <div class="karte bald">
+      <span class="icon">✏️</span>
+      <span class="name">Wörter üben</span>
+      <span class="klasse">2. Klasse – bald</span>
+    </div>
+
   </div>
-  <button id="play-again-btn">Nochmal spielen 🔄</button>
-  <button id="home-btn">Andere Themen 🏠</button>
 </div>
 
-<script>
-(function() {
-  // ── Helpers ────────────────────────────────────────────────
-  function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-  function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-  function repeatStr(s, n) { var r = ''; for (var i = 0; i < n; i++) r += s; return r; }
-  function formatCent(c) {
-    if (c >= 100) {
-      var e = Math.floor(c / 100), ct = c % 100;
-      return ct === 0 ? e + ' \u20ac' : e + ',' + (ct < 10 ? '0' : '') + ct + ' \u20ac';
-    }
-    return c + ' ct';
-  }
-  function starStr(n, max) { var s = ''; for (var i = 0; i < max; i++) s += (i < n ? '\u2B50' : '\u2606'); return s; }
-  function el(id) { return document.getElementById(id); }
+<!-- SACHKUNDE -->
+<div class="fach-section sachkunde">
+  <div class="fach-title">🌍 Sachkunde</div>
+  <div class="karten-grid">
 
-  // ── Topics ────────────────────────────────────────────────
-  var TOPICS = [
-    { id:'mengen', name:'Mengen & Zahlen', icon:'\uD83D\uDD22', color:'sky', accent:'#4FC3F7',
-      make: function() {
-        var qs = [], emojis = ['\uD83C\uDF4E','\u2B50','\uD83D\uDC38','\u26BD','\uD83C\uDF38','\uD83C\uDF08'];
-        for (var i = 0; i < 5; i++) {
-          var n = rnd(3, 12), e = pick(emojis);
-          qs.push({ emoji:e, text:repeatStr(e,n)+'\n\nWie viele siehst du?', hint:'Z\u00e4hle genau!', answer:n, type:'mc' });
-        }
-        for (var i = 0; i < 5; i++) {
-          var st = rnd(1,14), g = rnd(0,4);
-          var seq = [st,st+1,st+2,st+3,st+4];
-          var ans = seq[g];
-          var txt = seq.map(function(v,idx){ return idx===g?'___':v; }).join(', ');
-          qs.push({ emoji:'\uD83D\uDD22', text:txt, hint:'Welche Zahl fehlt?', answer:ans, type:'mc' });
-        }
-        return shuffle(qs).slice(0,8);
-      }
-    },
-    { id:'addition', name:'Addition', icon:'\u2795', color:'grass', accent:'#66BB6A',
-      make: function() {
-        var qs = [];
-        for (var i = 0; i < 10; i++) {
-          var a = rnd(1,9), b = rnd(1,9);
-          qs.push({ emoji:'\u2795', text:a+' + '+b+' = ?', hint:'', answer:a+b, type:'input' });
-        }
-        return qs;
-      }
-    },
-    { id:'subtraktion', name:'Subtraktion', icon:'\u2796', color:'berry', accent:'#EF5350',
-      make: function() {
-        var qs = [];
-        for (var i = 0; i < 10; i++) {
-          var ans = rnd(1,10), b = rnd(1,9);
-          qs.push({ emoji:'\u2796', text:(ans+b)+' \u2212 '+b+' = ?', hint:'', answer:ans, type:'input' });
-        }
-        return qs;
-      }
-    },
-    { id:'umkehr', name:'Umkehraufgaben', icon:'\uD83D\uDD04', color:'sun', accent:'#FFD54F',
-      make: function() {
-        var qs = [];
-        for (var i = 0; i < 8; i++) {
-          var a=rnd(2,8), b=rnd(2,8), s=a+b;
-          qs.push({ emoji:'\uD83D\uDD04', text:a+' + '+b+' = '+s+'\n\n'+s+' \u2212 '+b+' = ?', hint:'Umkehraufgabe!', answer:a, type:'mc' });
-          qs.push({ emoji:'\uD83D\uDD04', text:a+' + '+b+' = '+s+'\n\n'+s+' \u2212 '+a+' = ?', hint:'Umkehraufgabe!', answer:b, type:'mc' });
-        }
-        return shuffle(qs).slice(0,8);
-      }
-    },
-    { id:'tausch', name:'Tauschaufgaben', icon:'\u21D4', color:'purple', accent:'#AB47BC',
-      make: function() {
-        var qs = [];
-        for (var i = 0; i < 10; i++) {
-          var a=rnd(1,9), b=rnd(1,9);
-          qs.push({ emoji:'\u21D4', text:a+' + '+b+' = '+(a+b)+'\n\n'+b+' + '+a+' = ?', hint:'Das Ergebnis bleibt gleich!', answer:a+b, type:'mc' });
-        }
-        return shuffle(qs).slice(0,8);
-      }
-    },
-    { id:'zwerge', name:'Zwerg & Riese', icon:'\uD83E\uDD84', color:'sky', accent:'#29B6F6',
-      make: function() {
-        var qs = [], pairs=[[2,3],[1,5],[4,3],[2,6],[3,4],[2,5],[3,3],[1,6]];
-        shuffle(pairs).slice(0,5).forEach(function(p) {
-          var a=p[0],b=p[1];
-          qs.push({ emoji:'\uD83E\uDD84', text:a+' + '+b+' = '+(a+b)+'\n\n'+(a*10)+' + '+(b*10)+' = ?', hint:'Riesenaufgabe!', answer:(a+b)*10, type:'mc' });
-        });
-        [[7,3],[8,5],[9,4]].forEach(function(p) {
-          var a=p[0],b=p[1];
-          qs.push({ emoji:'\uD83E\uDD84', text:a+' \u2212 '+b+' = '+(a-b)+'\n\n'+(a*10)+' \u2212 '+(b*10)+' = ?', hint:'Riesen-Minusaufgabe!', answer:(a-b)*10, type:'mc' });
-        });
-        return shuffle(qs).slice(0,8);
-      }
-    },
-    { id:'verliebt', name:'Verliebte Zahlen', icon:'\uD83D\uDC95', color:'berry', accent:'#F06292',
-      make: function() {
-        var qs = [];
-        for (var n=1; n<=9; n++) qs.push({ emoji:'\uD83D\uDC95', text:n+' + ? = 10', hint:'Zahlenpaare bis 10!', answer:10-n, type:'mc' });
-        for (var i=0; i<4; i++) { var a=rnd(1,9); qs.push({ emoji:'\uD83D\uDC95', text:'Ich habe '+a+'.\nWie viel fehlt bis 10?', hint:a+' + ___ = 10', answer:10-a, type:'mc' }); }
-        return shuffle(qs).slice(0,8);
-      }
-    },
-    { id:'ueber', name:'\u00DCber den Zehner', icon:'\uD83D\uDE80', color:'grass', accent:'#26A69A',
-      make: function() {
-        var qs = [], combos = [];
-        for (var a=2;a<=9;a++) for (var b=2;b<=9;b++) if (a+b>10&&a+b<=18) combos.push([a,b]);
-        shuffle(combos).slice(0,8).forEach(function(p) {
-          var a=p[0],b=p[1],s1=10-a,s2=b-s1;
-          qs.push({ emoji:'\uD83D\uDE80', text:a+' + '+b+' = ?', hint:'Tipp: '+a+' + '+s1+' = 10, dann noch '+s2+' dazu', answer:a+b, type:'input' });
-        });
-        return qs;
-      }
-    },
-    { id:'stopp', name:'Zehnerstopp', icon:'\uD83D\uDED1', color:'berry', accent:'#FF7043',
-      make: function() {
-        var qs = [], tries = 0;
-        while (qs.length<8 && tries<200) {
-          tries++;
-          var ans=rnd(2,9), b=rnd(2,9), a=ans+b;
-          if (a>10&&a<=20) { var s1=a-10, s2=b-s1; if(s2>0) qs.push({ emoji:'\uD83D\uDED1', text:a+' \u2212 '+b+' = ?', hint:'Tipp: '+a+' \u2212 '+s1+' = 10, dann noch '+s2+' weg', answer:ans, type:'input' }); }
-        }
-        return qs;
-      }
-    },
-    { id:'geo', name:'Geometrie', icon:'\uD83D\uDD37', color:'purple', accent:'#7E57C2',
-      make: function() {
-        var sh = [
-          { name:'Kreis',    emoji:'\u26AB', ecken:0, seiten:0 },
-          { name:'Dreieck',  emoji:'\uD83D\uDD3A', ecken:3, seiten:3 },
-          { name:'Quadrat',  emoji:'\u2B1B', ecken:4, seiten:4 },
-          { name:'Rechteck', emoji:'\uD83D\uDCCB', ecken:4, seiten:4 }
-        ];
-        var qs = [];
-        sh.forEach(function(s) {
-          var others = sh.filter(function(x){return x.name!==s.name;}).map(function(x){return x.name;});
-          qs.push({ emoji:s.emoji, text:'Was ist das?', hint:'', answer:s.name, wrongOptions:others, type:'mc' });
-          if (s.ecken>0) {
-            qs.push({ emoji:s.emoji, text:'Wie viele Ecken hat ein '+s.name+'?', hint:'', answer:s.ecken, type:'mc' });
-            qs.push({ emoji:s.emoji, text:'Wie viele Seiten hat ein '+s.name+'?', hint:'', answer:s.seiten, type:'mc' });
-          } else {
-            qs.push({ emoji:s.emoji, text:'Hat ein Kreis Ecken?', hint:'', answer:'Nein', wrongOptions:['Ja'], type:'yn' });
-          }
-        });
-        return shuffle(qs).slice(0,8);
-      }
-    },
-    { id:'geld', name:'Geld', icon:'\uD83D\uDCB0', color:'sun', accent:'#FFA726',
-      make: function() {
-        var qs = [];
-        [[50,50],[100,50],[200,50],[10,5],[20,20],[100,20],[50,20]].forEach(function(p) {
-          var a=p[0],b=p[1],s=a+b;
-          qs.push({ emoji:'\uD83D\uDCB0', text:formatCent(a)+' + '+formatCent(b)+' = ?', hint:'', answer:s,
-            displayAnswer:formatCent(s),
-            displayOptions:shuffle([s,s+50,Math.max(5,s-50),s+20]).map(function(v){return{val:v,label:formatCent(v)};}),
-            type:'mcL' });
-        });
-        [
-          { emoji:'\uD83C\uDF4E', text:'Du kaufst einen Apfel f\u00fcr 50 ct.\nDu gibst 1 \u20ac.\nWie viel bekommst du zur\u00fcck?', answer:50 },
-          { emoji:'\uD83D\uDD8A\uFE0F', text:'Ein Stift kostet 80 ct.\nDu hast 2 \u20ac.\nWie viel hast du danach?', answer:120 },
-          { emoji:'\uD83E\uDDE3', text:'Zwei Bonbons kosten je 20 ct.\nWie viel zahlst du zusammen?', answer:40 }
-        ].forEach(function(s) {
-          qs.push({ emoji:s.emoji, text:s.text, hint:'', answer:s.answer,
-            displayAnswer:formatCent(s.answer),
-            displayOptions:shuffle([s.answer,s.answer+20,Math.max(5,s.answer-20),s.answer+50]).map(function(v){return{val:v,label:formatCent(v)};}),
-            type:'mcL' });
-        });
-        return shuffle(qs).slice(0,7);
-      }
-    },
-    { id:'zeit', name:'Zeit', icon:'\u23F0', color:'sky', accent:'#26C6DA',
-      make: function() {
-        return shuffle([
-          { emoji:'\u23F0', text:'Wie viele Tage hat eine Woche?', hint:'', answer:7, type:'mc' },
-          { emoji:'\uD83D\uDCC5', text:'Wie viele Monate hat ein Jahr?', hint:'', answer:12, type:'mc' },
-          { emoji:'\uD83D\uDD50', text:'Wie viele Stunden hat ein Tag?', hint:'', answer:24, type:'mc' },
-          { emoji:'\u23F1\uFE0F', text:'Wie viele Minuten hat eine Stunde?', hint:'', answer:60, type:'mc' },
-          { emoji:'\uD83C\uDF05', text:'Du stehst auf und gehst zur Schule.\nWelche Tageszeit?', hint:'', answer:'Morgen', wrongOptions:['Mittag','Abend','Nacht'], type:'mc' },
-          { emoji:'\uD83C\uDF06', text:'Du isst zu Mittag.\nWelche Tageszeit?', hint:'', answer:'Mittag', wrongOptions:['Morgen','Abend','Nacht'], type:'mc' },
-          { emoji:'\uD83C\uDF19', text:'Es ist dunkel und du gehst schlafen.\nWelche Tageszeit?', hint:'', answer:'Nacht', wrongOptions:['Morgen','Mittag','Abend'], type:'mc' },
-          { emoji:'\uD83C\uDF07', text:'Die Sonne geht gerade unter.\nWelche Tageszeit?', hint:'', answer:'Abend', wrongOptions:['Morgen','Mittag','Nacht'], type:'mc' },
-          { emoji:'\uD83D\uDCC6', text:'Welcher Tag kommt nach Mittwoch?', hint:'Mo Di Mi Do Fr Sa So', answer:'Donnerstag', wrongOptions:['Dienstag','Freitag','Sonntag'], type:'mc' },
-          { emoji:'\uD83D\uDCC6', text:'Welcher Monat kommt nach M\u00e4rz?', hint:'Jan Feb M\u00e4r Apr...', answer:'April', wrongOptions:['Februar','Mai','Juni'], type:'mc' }
-        ]).slice(0,8);
-      }
-    }
-  ];
+    <div class="karte bald">
+      <span class="icon">🌱</span>
+      <span class="name">Pflanzen & Tiere</span>
+      <span class="klasse">1. Klasse – bald</span>
+    </div>
 
-  // ── State ─────────────────────────────────────────────────
-  var totalScore = 0, topicProgress = {}, currentTopic = null;
-  var questions = [], qIndex = 0, answered = false;
-  var sessionCorrect = 0, sessionTotal = 0;
+    <div class="karte bald">
+      <span class="icon">🗺️</span>
+      <span class="name">Meine Umgebung</span>
+      <span class="klasse">2. Klasse – bald</span>
+    </div>
 
-  // ── Screen management ─────────────────────────────────────
-  function showScreen(id) {
-    ['topic-screen','game-screen','result-screen'].forEach(function(s) {
-      el(s).classList[s===id ? 'remove' : 'add']('hidden');
-    });
-  }
+  </div>
+</div>
 
-  // ── Score / progress ──────────────────────────────────────
-  function updateScore() {
-    el('score-label').textContent = totalScore + ' Punkte';
-    var earned = 0;
-    for (var k in topicProgress) earned += topicProgress[k];
-    el('progress-fill').style.width = Math.round(earned / (TOPICS.length * 3) * 100) + '%';
-  }
+<footer>
+  snoth0x53.github.io/schule_Spiele
+</footer>
 
-  // ── Topic list ────────────────────────────────────────────
-  function buildTopicList() {
-    var grid = el('topic-grid');
-    grid.innerHTML = '';
-    TOPICS.forEach(function(t) {
-      var btn = document.createElement('button');
-      btn.className = 'topic-btn';
-      btn.setAttribute('data-color', t.color);
-      btn.innerHTML =
-        '<span class="t-icon">'+t.icon+'</span>'+
-        '<span class="t-name">'+t.name+'</span>'+
-        '<span class="t-stars">'+starStr(topicProgress[t.id]||0,3)+'</span>';
-      btn.addEventListener('click', function() { startTopic(t); });
-      grid.appendChild(btn);
-    });
-    updateScore();
-    showScreen('topic-screen');
-  }
-
-  // ── Start a topic ─────────────────────────────────────────
-  function startTopic(t) {
-    currentTopic = t;
-    questions = t.make();
-    qIndex = 0; sessionCorrect = 0; sessionTotal = 0; answered = false;
-    document.documentElement.style.setProperty('--accent', t.accent);
-    el('topic-name-display').textContent = t.icon + ' ' + t.name;
-    showScreen('game-screen');
-    showQuestion();
-  }
-
-  // ── Question ──────────────────────────────────────────────
-  function showQuestion() {
-    answered = false;
-    var q = questions[qIndex];
-    el('q-counter').textContent = (qIndex+1)+' / '+questions.length;
-    el('question-emoji').textContent = q.emoji || '';
-    el('question-text').textContent  = q.text  || '';
-    el('question-hint').textContent  = q.hint  || '';
-    el('feedback').className = '';
-    el('feedback').innerHTML = '';
-    el('next-btn').style.display = 'none';
-
-    if (q.type === 'input') {
-      el('answers-grid').classList.add('hidden');
-      el('input-row').classList.remove('hidden');
-      el('numpad').classList.add('visible');
-      var inp = el('answer-input');
-      inp.value = ''; inp.className = '';
-      setTimeout(function(){ inp.focus(); }, 80);
-    } else {
-      el('answers-grid').classList.remove('hidden');
-      el('input-row').classList.add('hidden');
-      el('numpad').classList.remove('visible');
-      buildOptions(q);
-    }
-  }
-
-  function genDistractors(correct, n) {
-    var num = parseInt(correct, 10);
-    if (isNaN(num)) return [];
-    var dists = [], offs = shuffle([-3,-2,-1,1,2,3,4,-4,5,-5]);
-    for (var i = 0; i < offs.length && dists.length < n; i++) {
-      var d = num + offs[i];
-      if (d >= 0 && dists.indexOf(d) === -1) dists.push(d);
-    }
-    return dists;
-  }
-
-  function buildOptions(q) {
-    var grid = el('answers-grid');
-    grid.innerHTML = '';
-
-    if (q.type === 'mcL') {
-      shuffle(q.displayOptions).forEach(function(opt) {
-        var btn = document.createElement('button');
-        btn.className = 'ans-btn';
-        btn.textContent = opt.label;
-        btn.addEventListener('click', function() { checkMC(opt.val === q.answer, btn, q.displayAnswer); });
-        grid.appendChild(btn);
-      });
-      return;
-    }
-    if (q.type === 'yn') {
-      shuffle(['Ja','Nein']).forEach(function(opt) {
-        var btn = document.createElement('button');
-        btn.className = 'ans-btn';
-        btn.textContent = opt;
-        btn.addEventListener('click', function() { checkMC(opt === q.answer, btn, q.answer); });
-        grid.appendChild(btn);
-      });
-      return;
-    }
-    var correct = q.answer;
-    var wrongs = q.wrongOptions ? q.wrongOptions.slice(0,3) : genDistractors(correct, 3);
-    shuffle([correct].concat(wrongs)).slice(0,4).forEach(function(opt) {
-      var btn = document.createElement('button');
-      btn.className = 'ans-btn';
-      btn.textContent = opt;
-      btn.addEventListener('click', function() { checkMC(String(opt)===String(correct), btn, correct); });
-      grid.appendChild(btn);
-    });
-  }
-
-  // ── Answer checking ───────────────────────────────────────
-  function checkMC(isCorrect, btn, correctAnswer) {
-    if (answered) return;
-    answered = true; sessionTotal++;
-    if (isCorrect) {
-      btn.classList.add('correct');
-      sessionCorrect++; totalScore += 10;
-      feedback(true); confetti(); playSound(true);
-    } else {
-      btn.classList.add('wrong');
-      var all = document.querySelectorAll('.ans-btn');
-      for (var i=0;i<all.length;i++) if (String(all[i].textContent)===String(correctAnswer)) all[i].classList.add('correct');
-      feedback(false, correctAnswer); playSound(false);
-    }
-    el('next-btn').style.display = 'block';
-  }
-
-  function checkInput() {
-    if (answered) return;
-    var inp = el('answer-input'), val = parseInt(inp.value, 10), q = questions[qIndex];
-    if (isNaN(val)) return;
-    answered = true; sessionTotal++;
-    if (val === parseInt(q.answer, 10)) {
-      inp.classList.add('correct');
-      sessionCorrect++; totalScore += 10;
-      feedback(true); confetti(); playSound(true);
-    } else {
-      inp.classList.add('wrong');
-      feedback(false, q.answer); playSound(false);
-    }
-    el('next-btn').style.display = 'block';
-  }
-
-  function numpadPress(key) {
-    var inp = el('answer-input');
-    if (key==='del') inp.value = inp.value.slice(0,-1);
-    else if (key==='ok') checkInput();
-    else if (inp.value.length < 3) inp.value += key;
-  }
-
-  var PRAISES = ['Super! \uD83C\uDF89','Richtig! \u2B50','Fantastisch! \uD83C\uDFC6','Klasse! \uD83C\uDF1F','Toll gemacht! \uD83C\uDF8A','Perfekt! \uD83E\uDD47'];
-  var WRONGS   = ['Fast! \uD83D\uDCAA','Nicht ganz.','Weiter so!','Schau nochmal!'];
-
-  function feedback(correct, ans) {
-    var f = el('feedback');
-    if (correct) {
-      f.innerHTML = '\uD83C\uDF89 ' + pick(PRAISES);
-      f.className = 'correct';
-    } else {
-      f.innerHTML = '\uD83D\uDCA1 ' + pick(WRONGS) + '<br>Die Antwort ist: <strong>'+ans+'</strong>';
-      f.className = 'wrong';
-    }
-  }
-
-  function nextQuestion() {
-    qIndex++;
-    if (qIndex >= questions.length) showResult(); else showQuestion();
-  }
-
-  // ── Result ────────────────────────────────────────────────
-  function showResult() {
-    showScreen('result-screen');
-    var pct = sessionTotal > 0 ? sessionCorrect / sessionTotal : 0;
-    var s = pct>=0.85?3:pct>=0.6?2:pct>=0.4?1:0;
-    topicProgress[currentTopic.id] = Math.max(topicProgress[currentTopic.id]||0, s);
-    updateScore();
-    el('result-emoji').textContent = ['\uD83D\uDE05','\uD83D\uDE0A','\uD83C\uDF1F','\uD83C\uDFC6'][s];
-    el('result-title').textContent = ['Nicht schlecht!','Gut gemacht!','Super!','Perfekt!'][s];
-    el('result-score').textContent = sessionCorrect+' von '+sessionTotal+' richtig ('+Math.round(pct*100)+' %)';
-    el('result-stars').textContent = starStr(s, 3);
-    confetti(60);
-  }
-
-  // ── Effects ───────────────────────────────────────────────
-  function confetti(n) {
-    n = n || 30;
-    var colors = ['#FFD54F','#EF5350','#66BB6A','#4FC3F7','#AB47BC','#FF7043'];
-    for (var i=0;i<n;i++) {
-      (function(d) {
-        setTimeout(function() {
-          var c = document.createElement('div');
-          c.className = 'confetti-piece';
-          var sz = rnd(6,14);
-          c.style.left = rnd(10,90)+'vw'; c.style.top = '-10px';
-          c.style.background = pick(colors); c.style.width = sz+'px'; c.style.height = sz+'px';
-          c.style.borderRadius = Math.random()<0.5?'50%':'3px';
-          c.style.animationDuration = (Math.random()*0.8+0.8).toFixed(2)+'s';
-          c.style.animationDelay    = (Math.random()*0.3).toFixed(2)+'s';
-          document.body.appendChild(c);
-          setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); }, 2000);
-        }, d);
-      })(i*20);
-    }
-  }
-
-  var audioCtx = null;
-  function playSound(ok) {
-    try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      var ctx=audioCtx, osc=ctx.createOscillator(), g=ctx.createGain(), t=ctx.currentTime;
-      osc.connect(g); g.connect(ctx.destination);
-      if (ok) {
-        osc.frequency.setValueAtTime(523,t); osc.frequency.setValueAtTime(659,t+0.1); osc.frequency.setValueAtTime(784,t+0.2);
-        g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.5);
-        osc.start(t); osc.stop(t+0.5);
-      } else {
-        osc.frequency.setValueAtTime(300,t); osc.frequency.setValueAtTime(220,t+0.15);
-        g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
-        osc.start(t); osc.stop(t+0.4);
-      }
-    } catch(e) {}
-  }
-
-  // ── Wire up static buttons ────────────────────────────────
-  el('back-btn').addEventListener('click', function() { buildTopicList(); });
-  el('submit-btn').addEventListener('click', function() { checkInput(); });
-  el('next-btn').addEventListener('click', function() { nextQuestion(); });
-  el('play-again-btn').addEventListener('click', function() { startTopic(currentTopic); });
-  el('home-btn').addEventListener('click', function() { buildTopicList(); });
-
-  el('numpad').addEventListener('click', function(e) {
-    var k = e.target.getAttribute('data-key');
-    if (k) numpadPress(k);
-  });
-
-  el('answer-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') checkInput();
-  });
-
-  // ── Start ─────────────────────────────────────────────────
-  buildTopicList();
-})();
-</script>
 </body>
 </html>
