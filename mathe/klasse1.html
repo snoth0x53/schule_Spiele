@@ -96,9 +96,9 @@
   .ans-btn.correct { background: #E8F5E9; border-color: var(--correct); color: var(--correct); }
   .ans-btn.wrong   { background: #FFEBEE; border-color: var(--wrong);   color: var(--wrong); }
 
-  #input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  #input-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
   #answer-input {
-    flex: 1; border: 3px solid #E0E0E0; border-radius: var(--r); padding: 14px 16px;
+    width: 100%; border: 3px solid #E0E0E0; border-radius: var(--r); padding: 10px 16px;
     font-size: 1.6rem; font-weight: 800; color: var(--ink); text-align: center;
     outline: none; background: white; -webkit-appearance: none; appearance: none;
   }
@@ -106,15 +106,17 @@
   #answer-input.wrong   { border-color: var(--wrong);   background: #FFEBEE; }
   #submit-btn {
     background: var(--ink); color: white; border: none; border-radius: var(--r);
-    padding: 14px 20px; font-size: 1.2rem; cursor: pointer; font-weight: 800; white-space: nowrap;
+    padding: 12px 20px; font-size: 1.1rem; cursor: pointer; font-weight: 800;
+    width: 100%; display: none;
   }
+  @media(min-width:500px){ #submit-btn { display: block !important; } }
 
-  #numpad { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  #numpad { display: none; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   #numpad.visible { display: flex; }
   .num-key {
-    background: white; border: 2px solid #E0E0E0; border-radius: 12px; padding: 14px;
-    font-size: 1.3rem; font-weight: 800; color: var(--ink); cursor: pointer;
-    text-align: center; width: calc(33.33% - 6px);
+    background: white; border: 2px solid #E0E0E0; border-radius: 12px; padding: 10px;
+    font-size: 1.2rem; font-weight: 800; color: var(--ink); cursor: pointer;
+    text-align: center; width: calc(33.33% - 4px);
   }
   .num-key:active { background: #E3F2FD; }
   .num-key.del { background: #FFF3E0; }
@@ -205,7 +207,7 @@
     <div class="num-key" data-key="9">9</div>
     <div class="num-key del" data-key="del">⌫</div>
     <div class="num-key" data-key="0">0</div>
-    <div class="num-key ok" data-key="ok">✓</div>
+    <div class="num-key ok" data-key="ok" style="width:100%">✓ OK</div>
   </div>
   <div id="feedback"></div>
   <button id="next-btn">Weiter →</button>
