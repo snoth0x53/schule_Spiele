@@ -84,14 +84,18 @@
     border-radius: 20px;
   }
 
-  /* Farben pro Fach */
-  .mathe   .karte { border-top: 5px solid #4FC3F7; }
-  .deutsch .karte { border-top: 5px solid #66BB6A; }
-  .sachkunde .karte { border-top: 5px solid #FFD54F; }
+  /* Farben pro Klassenstufe */
+  .klasse1 .karte { border-top: 5px solid #4FC3F7; }
+  .klasse1 .fach-title { color: #1565C0; }
 
-  .mathe    .fach-title { color: #1565C0; }
-  .deutsch  .fach-title { color: #2E7D32; }
-  .sachkunde .fach-title { color: #F57F17; }
+  .klasse2 .karte { border-top: 5px solid #66BB6A; }
+  .klasse2 .fach-title { color: #2E7D32; }
+
+  .klasse3 .karte { border-top: 5px solid #FFD54F; }
+  .klasse3 .fach-title { color: #F57F17; }
+
+  .klasse4 .karte { border-top: 5px solid #AB47BC; }
+  .klasse4 .fach-title { color: #7B1FA2; }
 
   /* Platzhalter-Karte (kommt bald) */
   .karte.bald {
@@ -115,19 +119,27 @@
 
 <header>
   <h1>🎓 Schul-Spiele</h1>
-  <p>Lernspiele für die Grundschule – einfach antippen und loslegen!</p>
+  <p>Mathe-Lernspiele für die Grundschule – einfach antippen und loslegen!</p>
 </header>
 
-<!-- MATHE -->
-<div class="fach-section mathe">
-  <div class="fach-title">🧮 Mathematik</div>
+<!-- MATHE KLASSE 1 -->
+<div class="fach-section klasse1">
+  <div class="fach-title">➕ Mathe Klasse 1</div>
   <div class="karten-grid">
 
     <a class="karte neu" href="mathe/klasse1.html">
-      <span class="icon">➕</span>
+      <span class="icon">🧮</span>
       <span class="name">Mathe-Abenteuer</span>
       <span class="klasse">1. Klasse</span>
     </a>
+
+  </div>
+</div>
+
+<!-- MATHE KLASSE 2 -->
+<div class="fach-section klasse2">
+  <div class="fach-title">🔢 Mathe Klasse 2</div>
+  <div class="karten-grid">
 
     <div class="karte bald">
       <span class="icon">🔢</span>
@@ -135,50 +147,32 @@
       <span class="klasse">2. Klasse – bald</span>
     </div>
 
+  </div>
+</div>
+
+<!-- MATHE KLASSE 3 -->
+<div class="fach-section klasse3">
+  <div class="fach-title">✖️ Mathe Klasse 3</div>
+  <div class="karten-grid">
+
     <div class="karte bald">
       <span class="icon">✖️</span>
-      <span class="name">Einmaleins</span>
+      <span class="name">Mathe-Abenteuer</span>
       <span class="klasse">3. Klasse – bald</span>
     </div>
 
   </div>
 </div>
 
-<!-- DEUTSCH -->
-<div class="fach-section deutsch">
-  <div class="fach-title">📖 Deutsch</div>
+<!-- MATHE KLASSE 4 -->
+<div class="fach-section klasse4">
+  <div class="fach-title">📐 Mathe Klasse 4</div>
   <div class="karten-grid">
 
     <div class="karte bald">
-      <span class="icon">🔤</span>
-      <span class="name">Buchstaben & Laute</span>
-      <span class="klasse">1. Klasse – bald</span>
-    </div>
-
-    <div class="karte bald">
-      <span class="icon">✏️</span>
-      <span class="name">Wörter üben</span>
-      <span class="klasse">2. Klasse – bald</span>
-    </div>
-
-  </div>
-</div>
-
-<!-- SACHKUNDE -->
-<div class="fach-section sachkunde">
-  <div class="fach-title">🌍 Sachkunde</div>
-  <div class="karten-grid">
-
-    <div class="karte bald">
-      <span class="icon">🌱</span>
-      <span class="name">Pflanzen & Tiere</span>
-      <span class="klasse">1. Klasse – bald</span>
-    </div>
-
-    <div class="karte bald">
-      <span class="icon">🗺️</span>
-      <span class="name">Meine Umgebung</span>
-      <span class="klasse">2. Klasse – bald</span>
+      <span class="icon">📐</span>
+      <span class="name">Mathe-Abenteuer</span>
+      <span class="klasse">4. Klasse – bald</span>
     </div>
 
   </div>
