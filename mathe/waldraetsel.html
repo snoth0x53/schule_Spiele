@@ -300,9 +300,9 @@
     // Stage 1: Mengen zählen - acorns on the path
     var n1 = rnd(5,9);
     stages.push({
-      story: 'Nussi entdeckt einen Haufen Eicheln unter der alten Eiche.',
+      story: 'Nussi entdeckt einen Haufen Kastanien unter dem alten Baum.',
       visual: '🌰'.repeat(n1),
-      question: 'Wie viele Eicheln liegen da?',
+      question: 'Wie viele Kastanien liegen da?',
       type: 'mc', answer: n1,
       nutReward: 1
     });
@@ -310,7 +310,7 @@
     // Stage 2: Addition - more acorns found
     var a2 = rnd(2,7), b2 = rnd(2,7);
     stages.push({
-      story: 'Etwas weiter findet Nussi noch mehr Eicheln in einem Busch.',
+      story: 'Etwas weiter findet Nussi noch mehr Kastanien in einem Busch.',
       visual: '🦔🌳',
       question: a2+' + '+b2+' = ?',
       type: 'input', answer: a2+b2,
@@ -454,21 +454,22 @@
     var s = stages[stageIndex];
     el('story-text').textContent = s.story;
     el('scene-visual').textContent = s.visual || '';
-    el('question-text').textContent = s.question + (s.hint ? '' : '');
+    el('question-text').textContent = s.question;
     el('feedback').className = ''; el('feedback').innerHTML = '';
     el('next-btn').style.display = 'none';
     updatePath();
 
+    // Always remove any old hint first, regardless of whether this stage has one
+    var oldHint = document.getElementById('temp-hint');
+    if (oldHint) oldHint.remove();
+
     if (s.hint) {
-      el('question-text').textContent = s.question;
       var hintEl = document.createElement('div');
+      hintEl.id = 'temp-hint';
       hintEl.style.cssText = 'font-size:0.85rem;color:#8D6E63;font-style:italic;text-align:center;margin-top:-8px;margin-bottom:4px;';
       hintEl.textContent = s.hint;
       el('question-text').insertAdjacentElement('afterend', hintEl);
-      hintEl.id = 'temp-hint';
     }
-    var oldHint = document.getElementById('temp-hint');
-    if (oldHint && !s.hint) oldHint.remove();
 
     // Clean up any leftover dual rows from a previous dual stage
     var oldDual = el('scene-card').querySelectorAll('.dual-row');
