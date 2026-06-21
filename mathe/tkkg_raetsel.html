@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TKKG Junior – Der Schokoladen-Dieb 🍫🔍</title>
+<style>
+  :root {
+    --navy: #1B2A4A;
+    --navy-light: #2C3E5C;
+    --gold: #E8B339;
+    --red: #C0392B;
+    --choc: #5A3A22;
+    --cream: #FBF6EC;
+    --ink: #1B2A4A;
+    --correct: #2E7D32;
+    --wrong: #C0392B;
+    --card: #FFFDF7;
+    --r: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { overflow-x: hidden; }
+  body {
+    font-family: -apple-system, 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(165deg, #2C3E5C 0%, #1B2A4A 100%);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 14px; position: relative;
+  }
+  .bg-deco { position: fixed; pointer-events: none; z-index: 0; opacity: 0.10; color: white; }
+  .bg-deco1 { top: 5%; left: 3%; font-size: 4rem; }
+  .bg-deco2 { top: 42%; right: 2%; font-size: 4.5rem; }
+  .bg-deco3 { bottom: 5%; left: 6%; font-size: 3.5rem; }
+  .bg-deco4 { top: 72%; right: 9%; font-size: 3rem; }
+
+  #header {
+    width: 100%; max-width: 580px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; position: relative; z-index: 1;
+  }
+  #title-bar { font-size: clamp(0.95rem, 3.6vw, 1.2rem); font-weight: 800; color: var(--gold); }
+  #clue-counter {
+    font-size: 0.9rem; font-weight: 800; color: var(--navy);
+    background: var(--gold); border-radius: 20px; padding: 5px 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 5px; white-space: nowrap;
+  }
+
+  /* PATH */
+  #path-wrap { width: 100%; max-width: 580px; position: relative; z-index: 1; margin-bottom: 14px; }
+  #path-track { display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0 4px; }
+  #path-line { position: absolute; top: 50%; left: 4%; right: 4%; height: 4px; background: rgba(255,255,255,0.15); border-radius: 4px; transform: translateY(-50%); z-index: 0; }
+  #path-fill { position: absolute; top: 50%; left: 4%; height: 4px; background: var(--gold); border-radius: 4px; transform: translateY(-50%); z-index: 1; width: 0%; transition: width 0.6s ease; }
+  .path-stop { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; position: relative; z-index: 2; transition: all 0.3s ease; flex-shrink: 0; }
+  .path-stop.done { background: var(--gold); color: var(--navy); }
+  .path-stop.current { background: var(--red); width: 34px; height: 34px; box-shadow: 0 0 0 4px rgba(192,57,43,0.35); color: white; }
+
+  /* SUSPECTS BAR */
+  #suspects-bar {
+    width: 100%; max-width: 580px; display: flex; gap: 8px; margin-bottom: 12px;
+    position: relative; z-index: 1;
+  }
+  .suspect {
+    flex: 1; background: var(--navy-light); border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 14px; padding: 8px 6px; text-align: center;
+    transition: all 0.4s ease; position: relative; overflow: hidden;
+  }
+  .suspect .s-face { font-size: 1.8rem; line-height: 1; }
+  .suspect .s-name { font-size: 0.72rem; font-weight: 700; color: #E0E0E0; margin-top: 3px; }
+  .suspect.cleared { opacity: 0.4; }
+  .suspect.cleared::after {
+    content: '✓ frei'; position: absolute; top: 4px; right: 4px;
+    font-size: 0.55rem; font-weight: 800; color: #81C784;
+  }
+  .suspect.cleared .s-face { filter: grayscale(1); }
+  .suspect.guilty {
+    border-color: var(--red); background: #4A1F1A;
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.4);
+  }
+
+  /* SCENE CARD */
+  #scene-card {
+    width: 100%; max-width: 580px; background: var(--card); border-radius: 24px;
+    padding: clamp(18px, 4vw, 26px); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+    position: relative; z-index: 1; margin-bottom: 12px; overflow: hidden;
+  }
+  #scene-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+    background: repeating-linear-gradient(45deg, var(--gold) 0 10px, var(--navy) 10px 20px);
+  }
+  #speaker {
+    display: flex; align-items: center; gap: 8px; justify-content: center;
+    margin-bottom: 10px; font-weight: 800; color: var(--choc); font-size: 0.95rem;
+  }
+  #speaker .sp-face { font-size: 1.5rem; }
+  #story-text { font-size: clamp(0.95rem, 3.2vw, 1.05rem); color: #3E2E1F; line-height: 1.5; margin-bottom: 14px; text-align: center; }
+  #scene-visual { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; font-size: clamp(1.8rem, 7vw, 2.6rem); margin-bottom: 14px; min-height: 46px; }
+  #question-text { font-size: clamp(1.2rem, 5vw, 1.6rem); font-weight: 800; color: var(--ink); text-align: center; margin-bottom: 16px; line-height: 1.3; white-space: pre-wrap; }
+
+  #answers-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .ans-btn {
+    background: white; border: 3px solid #D7CCC8; border-radius: 16px; padding: 14px 10px;
+    font-size: clamp(1.1rem, 4.5vw, 1.4rem); font-weight: 800; color: var(--ink); cursor: pointer;
+    min-height: 58px; min-width: 80px; flex: 1 1 calc(50% - 6px);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .ans-btn:active { transform: scale(0.96); }
+  .ans-btn.correct { background: #E8F5E9; border-color: var(--correct); color: var(--correct); }
+  .ans-btn.wrong   { background: #FFEBEE; border-color: var(--wrong);   color: var(--wrong); }
+
+  /* Suspect choice buttons (final) */
+  .suspect-choice {
+    background: white; border: 3px solid #D7CCC8; border-radius: 16px; padding: 14px 10px;
+    cursor: pointer; flex: 1 1 calc(33% - 8px); min-width: 90px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: all 0.15s;
+  }
+  .suspect-choice:active { transform: scale(0.96); }
+  .suspect-choice .sc-face { font-size: 2.2rem; }
+  .suspect-choice .sc-name { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
+  .suspect-choice.correct { background: #E8F5E9; border-color: var(--correct); }
+  .suspect-choice.wrong   { background: #FFEBEE; border-color: var(--wrong); }
+
+  #input-area { display: none; flex-direction: column; align-items: center; gap: 10px; }
+  #input-area.visible { display: flex; }
+  #answer-input {
+    width: 140px; border: 3px solid #D7CCC8; border-radius: 16px; padding: 12px;
+    font-size: 1.6rem; font-weight: 800; color: var(--ink); text-align: center;
+    outline: none; background: white; -moz-appearance: textfield; -webkit-appearance: none;
+  }
+  #answer-input::-webkit-outer-spin-button, #answer-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  #answer-input.correct { border-color: var(--correct); background: #E8F5E9; }
+  #answer-input.wrong   { border-color: var(--wrong);   background: #FFEBEE; }
+  #submit-btn { background: var(--navy); color: white; border: none; border-radius: 16px; padding: 13px 30px; font-size: 1.05rem; font-weight: 800; cursor: pointer; }
+  #submit-btn:active { transform: scale(0.97); }
+
+  #numpad { display: none; flex-wrap: wrap; gap: 6px; margin-top: 12px; width: 100%; max-width: 280px; }
+  #numpad.visible { display: flex; }
+  .num-key { background: white; border: 2px solid #D7CCC8; border-radius: 12px; padding: 10px; font-size: 1.15rem; font-weight: 800; color: var(--ink); cursor: pointer; text-align: center; width: calc(33.33% - 4px); }
+  .num-key:active { background: #ECEFF1; }
+  .num-key.del { background: #FFE0B2; }
+  .num-key.ok  { background: var(--navy); color: white; }
+  @media(min-width:500px){ #numpad { display: none !important; } }
+
+  #feedback { border-radius: 16px; padding: 14px; margin-top: 14px; text-align: center; font-size: 1rem; font-weight: 700; display: none; }
+  #feedback.correct { background: #E8F5E9; color: var(--correct); display: block; }
+  #feedback.wrong   { background: #FFEBEE; color: var(--wrong);   display: block; }
+  #feedback .clue-reveal { display: block; margin-top: 8px; font-size: 0.9rem; color: var(--choc); font-style: italic; }
+
+  #next-btn { background: var(--gold); color: var(--navy); border: none; border-radius: 16px; padding: 15px 30px; font-size: 1.05rem; font-weight: 800; cursor: pointer; width: 100%; max-width: 580px; display: none; margin-top: 4px; position: relative; z-index: 1; }
+  #next-btn:active { transform: scale(0.98); }
+
+  .full-screen { width: 100%; max-width: 580px; text-align: center; position: relative; z-index: 1; }
+  .full-screen .big-emoji { font-size: 4.5rem; margin-bottom: 12px; }
+  .full-screen h2 { font-size: clamp(1.4rem, 5.5vw, 1.9rem); color: var(--gold); font-weight: 900; margin-bottom: 10px; }
+  .full-screen p { font-size: 1rem; color: #E0E0E0; line-height: 1.55; margin-bottom: 18px; }
+  .start-btn, .restart-btn { background: var(--red); color: white; border: none; border-radius: 18px; padding: 16px 36px; font-size: 1.15rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(192,57,43,0.5); }
+  .start-btn:active, .restart-btn:active { transform: scale(0.97); }
+  .home-link { display: inline-block; margin-top: 14px; color: var(--gold); text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
+
+  /* Suspect cards on intro */
+  .intro-suspects { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .intro-suspect { background: var(--navy-light); border: 2px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 12px 10px; width: 150px; }
+  .intro-suspect .is-face { font-size: 2.4rem; }
+  .intro-suspect .is-name { font-size: 0.95rem; font-weight: 800; color: var(--gold); margin: 4px 0 2px; }
+  .intro-suspect .is-desc { font-size: 0.72rem; color: #BDBDBD; line-height: 1.35; }
+
+  /* Evidence card on end screen */
+  #evidence-list { text-align: left; background: var(--navy-light); border-radius: 16px; padding: 16px 18px; margin-bottom: 18px; }
+  #evidence-list h3 { color: var(--gold); font-size: 1rem; margin-bottom: 10px; text-align: center; }
+  #evidence-list .ev-item { font-size: 0.88rem; color: #E0E0E0; line-height: 1.5; margin-bottom: 8px; padding-left: 22px; position: relative; }
+  #evidence-list .ev-item::before { content: '🔎'; position: absolute; left: 0; font-size: 0.85rem; }
+
+  .hidden { display: none !important; }
+
+  .confetti-piece { position: fixed; pointer-events: none; z-index: 1000; animation: fall 1.3s ease-in forwards; }
+  @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+  .badge-shine { background: linear-gradient(135deg, var(--gold), #FFF3D0, var(--gold)); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+</style>
+</head>
+<body>
+
+<div class="bg-deco bg-deco1">🍫</div>
+<div class="bg-deco bg-deco2">🕵️</div>
+<div class="bg-deco bg-deco3">🐾</div>
+<div class="bg-deco bg-deco4">🔍</div>
+
+<div id="header">
+  <div id="title-bar">🍫 TKKG Junior – Der Schokoladen-Dieb</div>
+  <div id="clue-counter">🔎 <span id="clue-count">0</span> / <span id="clue-total">8</span></div>
+</div>
+
+<div id="path-wrap">
+  <div id="path-track"><div id="path-line"></div><div id="path-fill"></div></div>
+</div>
+
+<!-- SUSPECTS (during game) -->
+<div id="suspects-bar" class="hidden"></div>
+
+<!-- INTRO -->
+<div id="intro-screen" class="full-screen">
+  <div class="big-emoji">🍫🕵️</div>
+  <h2>Der Schokoladen-Dieb</h2>
+  <p>In der Schokoladenfabrik von Klößchens Papa ist die brandneue <strong>Goldnuss-Praline</strong> verschwunden – das Geheimrezept für die große Messe! Klößchen ist verzweifelt. Tim, Karl, Gaby und natürlich Spürhund Oskar nehmen die Ermittlungen auf.</p>
+  <p style="color:var(--gold);font-weight:700;">Drei Verdächtige waren heute in der Fabrik:</p>
+  <div class="intro-suspects">
+    <div class="intro-suspect"><div class="is-face">👨‍🍳</div><div class="is-name">Konditor Knut</div><div class="is-desc">Arbeitet an der Pralinen­maschine. Wirkt nervös.</div></div>
+    <div class="intro-suspect"><div class="is-face">🧹</div><div class="is-name">Putzfrau Rosa</div><div class="is-desc">War früh allein in der Halle.</div></div>
+    <div class="intro-suspect"><div class="is-face">📦</div><div class="is-name">Bote Béla</div><div class="is-desc">Hat heute Pakete geliefert.</div></div>
+  </div>
+  <p style="font-size:0.9rem;">Löse die Hinweise – jeder bringt euch dem Täter näher. Am Ende musst <strong>du</strong> sagen: Wer war's?</p>
+  <button class="start-btn" id="start-btn">Ermittlung starten! 🔍</button>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="hidden" style="width:100%;max-width:580px;display:flex;flex-direction:column;align-items:center;">
+  <div id="scene-card">
+    <div id="speaker"></div>
+    <div id="story-text"></div>
+    <div id="scene-visual"></div>
+    <div id="question-text"></div>
+    <div id="answers-grid"></div>
+    <div id="input-area">
+      <input id="answer-input" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="?"/>
+      <button id="submit-btn">✓ Prüfen</button>
+      <div id="numpad">
+        <div class="num-key" data-key="1">1</div><div class="num-key" data-key="2">2</div><div class="num-key" data-key="3">3</div>
+        <div class="num-key" data-key="4">4</div><div class="num-key" data-key="5">5</div><div class="num-key" data-key="6">6</div>
+        <div class="num-key" data-key="7">7</div><div class="num-key" data-key="8">8</div><div class="num-key" data-key="9">9</div>
+        <div class="num-key del" data-key="del">⌫</div><div class="num-key" data-key="0">0</div><div class="num-key ok" data-key="ok">✓</div>
+      </div>
+    </div>
+    <div id="feedback"></div>
+  </div>
+  <button id="next-btn">Nächste Spur →</button>
+</div>
+
+<!-- END -->
+<div id="end-screen" class="full-screen hidden">
+  <div class="badge-shine" id="end-badge">🏆</div>
+  <h2 id="end-title">Fall gelöst!</h2>
+  <p id="end-text"></p>
+  <div id="evidence-list"></div>
+  <button class="restart-btn" id="restart-btn">Neuer Fall 🔍</button>
+  <br>
+  <a class="home-link" id="home-link" href="../index.html">Zurück zur Übersicht</a>
+</div>
+
+<script>
+(function() {
+  function el(id) { return document.getElementById(id); }
+  function rnd(a,b) { return Math.floor(Math.random()*(b-a+1))+a; }
+  function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+  // ── Suspects ────────────────────────────────────────────────
+  var SUSPECTS = [
+    { id:'knut', face:'👨‍🍳', name:'Konditor Knut' },
+    { id:'rosa', face:'🧹', name:'Putzfrau Rosa' },
+    { id:'bela', face:'📦', name:'Bote Béla' }
+  ];
+
+  var culprit = null;       // chosen at game start
+  var stages = [];
+  var stageIndex = 0;
+  var cluesFound = 0;
+  var answered = false;
+  var evidenceLog = [];     // collected clue texts for the recap
+  var clearedSuspects = {};
+
+  // ── Build the case (story + math, with culprit-dependent clues) ──
+  function buildStages() {
+    culprit = pick(SUSPECTS);
+    evidenceLog = [];
+    clearedSuspects = {};
+    var others = SUSPECTS.filter(function(s){ return s.id !== culprit.id; });
+
+    var st = [];
+
+    // 1. Mengen – Oskar sniffs footprints (count)
+    var n1 = rnd(6,9);
+    st.push({
+      speaker: '🐶 Oskar',
+      story: 'Oskar schnüffelt am Tatort und entdeckt schokoladige Schuhabdrücke auf dem Boden!',
+      visual: '👞'.repeat(n1),
+      question: 'Wie viele Schuhabdrücke zählst du?',
+      type: 'mc', answer: n1,
+      clue: 'Der Dieb hinterließ ' + n1 + ' schokoladige Schuhabdrücke – er trug große Schuhe.'
+    });
+
+    // 2. Addition – Karl counts pralines before/after (Computer)
+    var a2 = rnd(3,7), b2 = rnd(3,7);
+    st.push({
+      speaker: '🧒 Karl',
+      story: '"Lass mich rechnen!", sagt Karl, genannt Computer. In zwei Schachteln fehlen Pralinen.',
+      visual: '🍫📦',
+      question: 'In der ersten Schachtel fehlen '+a2+' Pralinen, in der zweiten '+b2+'.\n'+a2+' + '+b2+' = ?',
+      type: 'input', answer: a2+b2,
+      clue: 'Insgesamt fehlen ' + (a2+b2) + ' Goldnuss-Pralinen.'
+    });
+
+    // 3. Subtraktion – alibi check clears ONE innocent suspect
+    var innocent1 = others[0];
+    var start3 = rnd(12,16), sub3 = rnd(3,6);
+    st.push({
+      speaker: '🧒 Tim',
+      story: '"' + innocent1.name + ' war nachweislich woanders", stellt Tim fest. Ein Verdächtiger fällt weg!',
+      visual: innocent1.face + '✓',
+      question: 'Von '+start3+' Hinweisen passen '+sub3+' nicht zu '+innocent1.name+'.\n'+start3+' − '+sub3+' = ?',
+      type: 'input', answer: start3 - sub3,
+      clue: innocent1.name + ' hat ein Alibi und ist unschuldig.',
+      clearSuspect: innocent1.id
+    });
+
+    // 4. Verliebte Zahlen – lock code at the storage room
+    var have4 = rnd(2,8);
+    st.push({
+      speaker: '👧 Gaby',
+      story: 'Gaby findet die Vorratskammer mit einem Zahlenschloss. Der Code muss 10 ergeben!',
+      visual: '🔒🍫',
+      question: 'Auf dem Schloss steht schon die '+have4+'.\nWelche Zahl fehlt bis 10?',
+      type: 'mc', answer: 10 - have4,
+      clue: 'Hinter dem Schloss lag ein Stück Goldfolie – wie von der Praline!'
+    });
+
+    // 5. Über den Zehner – decode a time from a torn receipt
+    var a5 = rnd(6,9), b5 = rnd(4,8);
+    while (a5 + b5 <= 10 || a5 + b5 > 18) { a5 = rnd(6,9); b5 = rnd(4,8); }
+    var step1_5 = 10 - a5, step2_5 = b5 - step1_5;
+    var theTime = a5 + b5;
+    st.push({
+      speaker: '🧒 Karl',
+      story: 'Auf einem zerrissenen Kassenbon steht die Uhrzeit des Diebstahls – aber nur als Rechnung!',
+      visual: '🧾🕐',
+      question: a5+' + '+b5+' = ?',
+      hint: 'Tipp: '+a5+' + '+step1_5+' = 10, dann noch '+step2_5+' dazu',
+      type: 'input', answer: theTime,
+      clue: 'Der Diebstahl geschah um ' + theTime + ' Uhr.'
+    });
+
+    // 6. Tauschaufgaben – two witnesses confirm same number (TWIST: points to culprit)
+    var a6 = rnd(2,8), b6 = rnd(2,8);
+    while (a6 === b6) { b6 = rnd(2,8); }
+    st.push({
+      speaker: '👧 Gaby',
+      story: 'Zwei Zeugen sahen den Dieb – beide nennen unabhängig dieselbe Zahl an der Jacke. Ein klarer Beweis!',
+      visual: '🧥🔢',
+      question: a6+' + '+b6+' = ?\n'+b6+' + '+a6+' = ?',
+      hint: 'Tauschaufgabe – beide ergeben dasselbe!',
+      type: 'dual', answer1: a6+b6, answer2: a6+b6,
+      label1: a6+' + '+b6+' =', label2: b6+' + '+a6+' =',
+      clue: 'Der Dieb trug eine Jacke mit der Nummer ' + (a6+b6) + ' – wie auf ' + culprit.name + 's Arbeitskleidung!'
+    });
+
+    // 7. Zehnerstopp – clears the SECOND innocent (only culprit remains)
+    var innocent2 = others[1];
+    var ans7 = rnd(2,8), b7 = rnd(2,8);
+    var a7 = ans7 + b7;
+    while (a7 <= 10 || a7 > 18) { ans7 = rnd(2,8); b7 = rnd(2,8); a7 = ans7+b7; }
+    var s1_7 = a7 - 10, s2_7 = b7 - s1_7;
+    st.push({
+      speaker: '🧒 Tim',
+      story: '"Auch ' + innocent2.name + ' kann es nicht gewesen sein", rechnet Tim die Zeiten zurück. Nur noch EIN Verdächtiger bleibt!',
+      visual: innocent2.face + '✓',
+      question: a7+' − '+b7+' = ?',
+      hint: 'Tipp: '+a7+' − '+s1_7+' = 10, dann noch '+s2_7+' weiter',
+      type: 'input', answer: ans7,
+      clue: innocent2.name + ' war zur Tatzeit nicht in der Fabrik – auch unschuldig!',
+      clearSuspect: innocent2.id
+    });
+
+    // 8. FINALE – Whodunit! Choose the culprit
+    st.push({
+      speaker: '🕵️ Die ganze Bande',
+      story: 'Alle Hinweise zeigen auf eine Person! Tim, Karl, Gaby und Oskar schauen dich an. Wer hat die Goldnuss-Praline gestohlen?',
+      visual: '🔍❓',
+      question: 'Wer war der Dieb?',
+      type: 'whodunit',
+      answer: culprit.id,
+      isLast: true
+    });
+
+    return st;
+  }
+
+  function genDistractors(correct, n) {
+    var num = parseInt(correct,10);
+    var d = [], offs = [-3,-2,-1,1,2,3,4,-4].sort(function(){return Math.random()-0.5;});
+    for (var i=0;i<offs.length && d.length<n;i++) { var v = num+offs[i]; if (v>=0 && d.indexOf(v)===-1) d.push(v); }
+    return d;
+  }
+
+  function buildPath() {
+    var track = el('path-track');
+    var line = el('path-line'), fill = el('path-fill');
+    track.innerHTML = '';
+    track.appendChild(line); track.appendChild(fill);
+    for (var i=0;i<stages.length;i++) {
+      var stop = document.createElement('div');
+      stop.className = 'path-stop'; stop.id = 'stop-'+i;
+      stop.textContent = (i===stages.length-1) ? '🏆' : (i+1);
+      track.appendChild(stop);
+    }
+    updatePath();
+  }
+  function updatePath() {
+    for (var i=0;i<stages.length;i++) {
+      var stop = el('stop-'+i); if (!stop) continue;
+      stop.classList.remove('done','current');
+      if (i < stageIndex) stop.classList.add('done');
+      else if (i === stageIndex) stop.classList.add('current');
+    }
+    var pct = stages.length>1 ? (stageIndex/(stages.length-1))*92 : 0;
+    el('path-fill').style.width = pct+'%';
+  }
+
+  function buildSuspectsBar() {
+    var bar = el('suspects-bar');
+    bar.innerHTML = '';
+    SUSPECTS.forEach(function(s){
+      var d = document.createElement('div');
+      d.className = 'suspect';
+      d.id = 'suspect-'+s.id;
+      d.innerHTML = '<div class="s-face">'+s.face+'</div><div class="s-name">'+s.name+'</div>';
+      bar.appendChild(d);
+    });
+    bar.classList.remove('hidden');
+  }
+
+  function startGame() {
+    stages = buildStages();
+    stageIndex = 0; cluesFound = 0;
+    el('clue-count').textContent = '0';
+    el('clue-total').textContent = stages.length;
+    el('intro-screen').classList.add('hidden');
+    el('end-screen').classList.add('hidden');
+    el('game-screen').classList.remove('hidden');
+    buildPath();
+    buildSuspectsBar();
+    showStage();
+  }
+
+  function showStage() {
+    answered = false;
+    var s = stages[stageIndex];
+    el('speaker').innerHTML = s.speaker ? ('<span class="sp-face"></span>' + s.speaker) : '';
+    el('story-text').textContent = s.story;
+    el('scene-visual').textContent = s.visual || '';
+    el('question-text').textContent = s.question;
+    el('feedback').className = ''; el('feedback').innerHTML = '';
+    el('next-btn').style.display = 'none';
+    updatePath();
+
+    var oldHints = document.querySelectorAll('.temp-hint');
+    for (var hi=0; hi<oldHints.length; hi++) oldHints[hi].parentNode.removeChild(oldHints[hi]);
+    if (s.hint) {
+      var hintEl = document.createElement('div');
+      hintEl.className = 'temp-hint';
+      hintEl.style.cssText = 'font-size:0.85rem;color:#8D6E63;font-style:italic;text-align:center;margin-top:-8px;margin-bottom:4px;';
+      hintEl.textContent = s.hint;
+      el('question-text').insertAdjacentElement('afterend', hintEl);
+    }
+
+    var oldDual = el('scene-card').querySelectorAll('.dual-row');
+    for (var i=0;i<oldDual.length;i++) oldDual[i].parentNode.removeChild(oldDual[i]);
+
+    if (s.type === 'whodunit') {
+      el('question-text').textContent = s.question;
+      el('answers-grid').classList.remove('hidden');
+      el('input-area').classList.remove('visible');
+      el('numpad').classList.remove('visible');
+      buildWhodunit(s);
+    } else if (s.type === 'dual') {
+      el('question-text').textContent = '';
+      el('answers-grid').classList.add('hidden');
+      el('input-area').classList.remove('visible');
+      el('numpad').classList.remove('visible');
+      buildDual(s);
+    } else if (s.type === 'input') {
+      el('answers-grid').classList.add('hidden');
+      el('input-area').classList.add('visible');
+      el('numpad').classList.add('visible');
+      var inp = el('answer-input'); inp.style.display = ''; inp.value=''; inp.className='';
+      setTimeout(function(){inp.focus();}, 80);
+    } else {
+      el('answers-grid').classList.remove('hidden');
+      el('input-area').classList.remove('visible');
+      el('numpad').classList.remove('visible');
+      buildOptions(s);
+    }
+  }
+
+  function buildWhodunit(s) {
+    var grid = el('answers-grid');
+    grid.innerHTML = '';
+    // Only show suspects that aren't cleared (should be just the culprit + maybe show all 3 for challenge)
+    SUSPECTS.forEach(function(sus) {
+      var btn = document.createElement('div');
+      btn.className = 'suspect-choice';
+      if (clearedSuspects[sus.id]) { btn.style.opacity = '0.4'; }
+      btn.innerHTML = '<div class="sc-face">'+sus.face+'</div><div class="sc-name">'+sus.name+'</div>';
+      btn.addEventListener('click', function(){ checkWhodunit(sus.id, btn); });
+      grid.appendChild(btn);
+    });
+  }
+
+  function checkWhodunit(chosenId, btn) {
+    if (answered) return;
+    answered = true;
+    var correct = chosenId === culprit.id;
+    if (correct) {
+      btn.classList.add('correct');
+      var gbar = el('suspect-'+culprit.id); if (gbar) gbar.classList.add('guilty');
+      onCorrect(stages[stageIndex]);
+    } else {
+      btn.classList.add('wrong');
+      // highlight the real culprit
+      var choices = document.querySelectorAll('.suspect-choice');
+      choices.forEach(function(c){
+        if (c.querySelector('.sc-name').textContent === culprit.name) c.classList.add('correct');
+      });
+      onWrong(culprit.name, stages[stageIndex]);
+    }
+  }
+
+  function buildDual(s) {
+    var strayHints = document.querySelectorAll('.temp-hint');
+    for (var hi=0; hi<strayHints.length; hi++) {
+      if (strayHints[hi].textContent !== (s.hint || '')) strayHints[hi].parentNode.removeChild(strayHints[hi]);
+    }
+    var card = el('scene-card');
+    var wrap = document.createElement('div');
+    wrap.className = 'dual-row';
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:6px;';
+    function makeRow(label, answer, inputId) {
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:center;';
+      var lbl = document.createElement('span');
+      lbl.style.cssText = 'font-size:1.3rem;font-weight:800;color:var(--ink);white-space:nowrap;';
+      lbl.textContent = label;
+      var inp = document.createElement('input');
+      inp.type='number'; inp.inputMode='numeric'; inp.pattern='[0-9]*'; inp.className='dual-input';
+      inp.id = inputId; inp.placeholder='?';
+      inp.style.cssText = 'width:64px;border:3px solid #D7CCC8;border-radius:12px;padding:8px;font-size:1.3rem;font-weight:800;color:var(--ink);text-align:center;background:white;outline:none;-moz-appearance:textfield;';
+      row.appendChild(lbl); row.appendChild(inp);
+      return row;
+    }
+    wrap.appendChild(makeRow(s.label1, s.answer1, 'dual-inp1'));
+    wrap.appendChild(makeRow(s.label2, s.answer2, 'dual-inp2'));
+    card.insertBefore(wrap, el('feedback'));
+    setTimeout(function(){ var f=el('dual-inp1'); if(f) f.focus(); }, 80);
+    function tryCheck(e){ if(e.key==='Enter') checkDual(s); }
+    el('dual-inp1').addEventListener('keydown', tryCheck);
+    el('dual-inp2').addEventListener('keydown', tryCheck);
+    el('input-area').classList.add('visible');
+    el('answer-input').style.display = 'none';
+    el('numpad').classList.remove('visible');
+  }
+
+  function checkDual(s) {
+    if (answered) return;
+    var inp1 = el('dual-inp1'), inp2 = el('dual-inp2');
+    var v1 = parseInt(inp1.value,10), v2 = parseInt(inp2.value,10);
+    if (isNaN(v1)) { inp1.focus(); return; }
+    if (isNaN(v2)) { inp2.focus(); return; }
+    answered = true;
+    var ok1 = v1 === s.answer1, ok2 = v2 === s.answer2;
+    inp1.style.borderColor = ok1 ? 'var(--correct)' : 'var(--wrong)';
+    inp1.style.background  = ok1 ? '#E8F5E9' : '#FFEBEE';
+    inp2.style.borderColor = ok2 ? 'var(--correct)' : 'var(--wrong)';
+    inp2.style.background  = ok2 ? '#E8F5E9' : '#FFEBEE';
+    if (ok1 && ok2) onCorrect(s);
+    else onWrong(s.label1+' '+s.answer1+'  /  '+s.label2+' '+s.answer2, s);
+  }
+
+  function buildOptions(s) {
+    var grid = el('answers-grid');
+    grid.innerHTML = '';
+    var correct = s.answer;
+    var wrongs = s.wrongOptions ? s.wrongOptions.slice(0,3) : genDistractors(correct,3);
+    var pool = [correct].concat(wrongs).sort(function(){return Math.random()-0.5;}).slice(0,4);
+    pool.forEach(function(opt) {
+      var btn = document.createElement('button');
+      btn.className = 'ans-btn'; btn.textContent = opt;
+      btn.addEventListener('click', function(){ checkMC(String(opt)===String(correct), btn, correct, s); });
+      grid.appendChild(btn);
+    });
+  }
+
+  function checkMC(isCorrect, btn, correctAnswer, s) {
+    if (answered) return;
+    answered = true;
+    if (isCorrect) { btn.classList.add('correct'); onCorrect(s); }
+    else {
+      btn.classList.add('wrong');
+      var all = document.querySelectorAll('.ans-btn');
+      for (var i=0;i<all.length;i++) if (String(all[i].textContent)===String(correctAnswer)) all[i].classList.add('correct');
+      onWrong(correctAnswer, s);
+    }
+  }
+
+  function checkInput() {
+    if (answered) return;
+    var s = stages[stageIndex];
+    if (s.type === 'dual') { checkDual(s); return; }
+    var inp = el('answer-input'), val = parseInt(inp.value,10);
+    if (isNaN(val)) return;
+    answered = true;
+    if (val === s.answer) { inp.classList.add('correct'); onCorrect(s); }
+    else { inp.classList.add('wrong'); onWrong(s.answer, s); }
+    el('numpad').classList.remove('visible');
+  }
+
+  var PRAISES = ['Guter Spürsinn! 🔍','Klasse ermittelt! 🕵️','Die Bande ist stolz! 🌟','Volltreffer! 🎯','Oskar wedelt vor Freude! 🐶'];
+
+  function registerClue(s) {
+    if (s && s.clue && evidenceLog.indexOf(s.clue) === -1) {
+      evidenceLog.push(s.clue);
+    }
+    if (s && s.clearSuspect) {
+      clearedSuspects[s.clearSuspect] = true;
+      var sb = el('suspect-'+s.clearSuspect);
+      if (sb) sb.classList.add('cleared');
+    }
+  }
+
+  function onCorrect(s) {
+    cluesFound++;
+    el('clue-count').textContent = cluesFound;
+    registerClue(s);
+    el('feedback').className = 'correct';
+    var msg = '🔎 ' + pick(PRAISES);
+    if (s && s.type === 'whodunit') {
+      msg = '🎉 Richtig! <strong>' + culprit.name + '</strong> war der Dieb!';
+    } else if (s && s.clue) {
+      msg += '<span class="clue-reveal">🗒️ Neuer Hinweis: ' + s.clue + '</span>';
+    }
+    el('feedback').innerHTML = msg;
+    confetti(); playSound(true);
+    el('next-btn').style.display = 'block';
+    el('next-btn').textContent = (s && s.isLast) ? 'Fall abschließen 🏆' : 'Nächste Spur →';
+  }
+
+  function onWrong(correctAnswer, s) {
+    // Still register the clue so the recap stays complete
+    registerClue(s);
+    el('feedback').className = 'wrong';
+    if (s && s.type === 'whodunit') {
+      el('feedback').innerHTML = '💡 Nicht ganz! Der echte Dieb war <strong>' + culprit.name + '</strong>. Schau dir am Ende nochmal die Hinweise an!';
+    } else {
+      el('feedback').innerHTML = '💡 Schau genau hin, Detektiv! Die richtige Antwort ist: <strong>'+correctAnswer+'</strong>';
+    }
+    playSound(false);
+    el('next-btn').style.display = 'block';
+    el('next-btn').textContent = (s && s.isLast) ? 'Fall abschließen 🏆' : 'Nächste Spur →';
+  }
+
+  function nextStage() {
+    stageIndex++;
+    if (stageIndex >= stages.length) showEnd();
+    else showStage();
+  }
+
+  function showEnd() {
+    el('game-screen').classList.add('hidden');
+    el('suspects-bar').classList.add('hidden');
+    el('end-screen').classList.remove('hidden');
+    updatePath();
+
+    el('end-title').textContent = 'Fall gelöst!';
+    el('end-text').innerHTML = 'Die Detektivbande hat ' + cluesFound + ' von ' + stages.length +
+      ' Aufgaben gemeistert und den Dieb überführt: Es war <strong>' + culprit.name +
+      '</strong>! Klößchen bekommt sein Goldnuss-Rezept zurück und teilt vor Freude Pralinen an alle aus. 🍫🎉';
+
+    // Evidence recap
+    var box = el('evidence-list');
+    var html = '<h3>🗒️ So habt ihr den Fall geknackt:</h3>';
+    evidenceLog.forEach(function(ev){ html += '<div class="ev-item">'+ev+'</div>'; });
+    html += '<div class="ev-item" style="color:var(--gold);font-weight:700;">Alle Spuren führten zu '+culprit.name+'!</div>';
+    box.innerHTML = html;
+
+    confetti(50);
+  }
+
+  function numpadPress(key) {
+    var inp = el('answer-input');
+    if (key==='del') inp.value = inp.value.slice(0,-1);
+    else if (key==='ok') checkInput();
+    else if (inp.value.length<3) inp.value += key;
+  }
+
+  function confetti(n) {
+    n = n || 25;
+    var colors = ['#E8B339','#C0392B','#5A3A22','#FFFFFF','#F5D78E'];
+    for (var i=0;i<n;i++) {
+      (function(d){
+        setTimeout(function(){
+          var c = document.createElement('div'); c.className='confetti-piece';
+          var sz = rnd(6,14);
+          c.style.left = rnd(10,90)+'vw'; c.style.top='-10px';
+          c.style.background = pick(colors); c.style.width = sz+'px'; c.style.height = sz+'px';
+          c.style.borderRadius = Math.random()<0.5?'50%':'3px';
+          c.style.animationDuration = (Math.random()*0.8+0.8).toFixed(2)+'s';
+          document.body.appendChild(c);
+          setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); }, 2000);
+        }, d);
+      })(i*20);
+    }
+  }
+
+  var audioCtx = null;
+  function playSound(ok) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      var ctx=audioCtx, osc=ctx.createOscillator(), g=ctx.createGain(), t=ctx.currentTime;
+      osc.connect(g); g.connect(ctx.destination);
+      if (ok) {
+        osc.frequency.setValueAtTime(523,t); osc.frequency.setValueAtTime(659,t+0.1); osc.frequency.setValueAtTime(784,t+0.2);
+        g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+        osc.start(t); osc.stop(t+0.5);
+      } else {
+        osc.frequency.setValueAtTime(300,t); osc.frequency.setValueAtTime(220,t+0.15);
+        g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+        osc.start(t); osc.stop(t+0.4);
+      }
+    } catch(e) {}
+  }
+
+  el('start-btn').addEventListener('click', startGame);
+  el('restart-btn').addEventListener('click', startGame);
+  el('submit-btn').addEventListener('click', checkInput);
+  el('next-btn').addEventListener('click', nextStage);
+  el('numpad').addEventListener('click', function(e){ var k = e.target.getAttribute('data-key'); if (k) numpadPress(k); });
+  el('answer-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkInput(); });
+})();
+</script>
+</body>
+</html>
