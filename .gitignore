@@ -1,0 +1,13 @@
+# macOS Systemdateien
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Editor-Dateien
+.vscode/
+*.swp
+
+# Sonstiges
+*.log
