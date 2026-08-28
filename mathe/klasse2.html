@@ -311,11 +311,15 @@
         var stunden = [1,2,3,4,5,6,7,8,9,10,11,12];
         for (var i = 0; i < 4; i++) {
           var h = pick(stunden);
-          qs.push({ emoji:'\uD83D\uDD52', text:'Wie viel Uhr ist es, wenn der große Zeiger auf der 12 steht\nund der kleine Zeiger auf der '+h+'?', hint:'Volle Stunde', answer: h+':00', type:'mc-text', wrongOptions:[((h%12)+1)+':00', (h===1?12:h-1)+':00', h+':30'] });
+          qs.push({ text:'Wie viel Uhr ist es?', hint:'Volle Stunde', answer: h+':00', type:'clock',
+            clockHour: h, clockMinute: 0,
+            wrongOptions:[((h%12)+1)+':00', (h===1?12:h-1)+':00', h+':30'] });
         }
         for (var i = 0; i < 4; i++) {
           var h2 = pick(stunden);
-          qs.push({ emoji:'\uD83D\uDD52', text:'Der kleine Zeiger steht zwischen '+h2+' und '+((h2%12)+1)+',\nder große Zeiger auf der 6.\nWelche Uhrzeit ist das?', hint:'Halbe Stunde', answer: h2+':30', type:'mc-text', wrongOptions:[h2+':00', ((h2%12)+1)+':00', ((h2%12)+1)+':30'] });
+          qs.push({ text:'Wie viel Uhr ist es?', hint:'Halbe Stunde', answer: h2+':30', type:'clock',
+            clockHour: h2, clockMinute: 30,
+            wrongOptions:[h2+':00', ((h2%12)+1)+':00', ((h2%12)+1)+':30'] });
         }
         return shuffle(qs).slice(0,8);
       }
@@ -421,11 +425,22 @@
     el('feedback').innerHTML = '';
     el('next-btn').style.display = 'none';
 
-    // Clean up dual-zw rows
+    // Clean up dual-zw rows and clock SVG
     var oldZW = document.querySelectorAll('.zw-row');
     for (var i=0;i<oldZW.length;i++) oldZW[i].parentNode.removeChild(oldZW[i]);
+    var oldClock = document.querySelectorAll('.clock-wrap');
+    for (var i=0;i<oldClock.length;i++) oldClock[i].parentNode.removeChild(oldClock[i]);
 
-    if (q.type === 'dual-zw') {
+    if (q.type === 'clock') {
+      el('question-emoji').textContent = '';
+      el('question-text').textContent = q.text || '';
+      el('answers-grid').classList.remove('hidden');
+      el('input-row').classList.add('hidden');
+      el('numpad').classList.remove('visible');
+      el('submit-btn').classList.remove('visible');
+      insertClock(q.clockHour, q.clockMinute);
+      buildOptions(q);
+    } else if (q.type === 'dual-zw') {
       el('question-text').textContent = '';
       el('answers-grid').classList.add('hidden');
       el('input-row').classList.add('hidden');
@@ -449,6 +464,50 @@
       el('submit-btn').classList.remove('visible');
       buildOptions(q);
     }
+  }
+
+  function insertClock(hour, minute) {
+    var card = el('question-card');
+    var wrap = document.createElement('div');
+    wrap.className = 'clock-wrap';
+    wrap.style.cssText = 'display:flex;justify-content:center;margin-bottom:10px;';
+
+    var minuteAngle = (minute / 60) * 360;
+    var hourAngle = ((hour % 12) / 12) * 360 + (minute / 60) * 30;
+
+    var cx = 90, cy = 90, r = 80;
+    var hourLen = 42, minLen = 65;
+
+    function pointOnCircle(angleDeg, len) {
+      var rad = (angleDeg - 90) * Math.PI / 180;
+      return { x: cx + len * Math.cos(rad), y: cy + len * Math.sin(rad) };
+    }
+
+    var hourTip = pointOnCircle(hourAngle, hourLen);
+    var minTip = pointOnCircle(minuteAngle, minLen);
+
+    var ticks = '';
+    var numbers = '';
+    for (var n = 1; n <= 12; n++) {
+      var angle = (n / 12) * 360;
+      var tickOuter = pointOnCircle(angle, r - 4);
+      var tickInner = pointOnCircle(angle, r - 14);
+      ticks += '<line x1="'+tickOuter.x+'" y1="'+tickOuter.y+'" x2="'+tickInner.x+'" y2="'+tickInner.y+'" stroke="#5D4037" stroke-width="3" stroke-linecap="round"/>';
+      var numPos = pointOnCircle(angle, r - 26);
+      numbers += '<text x="'+numPos.x+'" y="'+numPos.y+'" font-size="15" font-weight="800" fill="#3E2723" text-anchor="middle" dominant-baseline="central">'+n+'</text>';
+    }
+
+    var svg =
+      '<svg width="180" height="180" viewBox="0 0 180 180">' +
+        '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="white" stroke="#5D4037" stroke-width="4"/>' +
+        ticks + numbers +
+        '<line x1="'+cx+'" y1="'+cy+'" x2="'+hourTip.x+'" y2="'+hourTip.y+'" stroke="#1A237E" stroke-width="6" stroke-linecap="round"/>' +
+        '<line x1="'+cx+'" y1="'+cy+'" x2="'+minTip.x+'" y2="'+minTip.y+'" stroke="#EF5350" stroke-width="4" stroke-linecap="round"/>' +
+        '<circle cx="'+cx+'" cy="'+cy+'" r="6" fill="#3E2723"/>' +
+      '</svg>';
+
+    wrap.innerHTML = svg;
+    card.insertBefore(wrap, el('question-text'));
   }
 
   function buildZW(q) {
