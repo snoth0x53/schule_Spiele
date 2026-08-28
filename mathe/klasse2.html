@@ -293,14 +293,54 @@
         return qs.slice(0,8);
       }
     },
-    { id:'einmaleins', name:'Kleines Einmaleins', icon:'\u2716\uFE0F', color:'berry', accent:'#EF5350',
+    { id:'einmaleins', name:'Malnehmen & Teilen', icon:'\u2716\uFE0F', color:'berry', accent:'#EF5350',
       make: function() {
         var qs = [];
         var reihen = [2,5,10];
-        for (var i = 0; i < 8; i++) {
+        // Malnehmen
+        for (var i = 0; i < 4; i++) {
           var reihe = pick(reihen);
           var faktor = rnd(1,10);
           qs.push({ emoji:'\u2716\uFE0F', text:reihe+' \u00d7 '+faktor+' = ?', hint: reihe+'er-Reihe', answer: reihe*faktor, type:'mc' });
+        }
+        // Teilen (Umkehrung der gleichen Reihen)
+        for (var i = 0; i < 4; i++) {
+          var reihe2 = pick(reihen);
+          var faktor2 = rnd(1,10);
+          var produkt = reihe2 * faktor2;
+          qs.push({ emoji:'\u2797', text:produkt+' : '+reihe2+' = ?', hint: 'Umkehrung der '+reihe2+'er-Reihe', answer: faktor2, type:'mc' });
+        }
+        return shuffle(qs).slice(0,8);
+      }
+    },
+    { id:'zahlenmauern', name:'Zahlenmauern', icon:'\uD83E\uDDF1', color:'grass', accent:'#26A69A',
+      make: function() {
+        var qs = [];
+        // Simple 3-stone pyramid: bottom two stones sum to top stone.
+        // Randomly hide one of the three positions (left, right, or top).
+        for (var i = 0; i < 8; i++) {
+          var left = rnd(5, 40);
+          var right = rnd(5, 40);
+          var top = left + right;
+          var missing = pick(['left','right','top']);
+          var ans;
+          if (missing === 'left') ans = left;
+          else if (missing === 'right') ans = right;
+          else ans = top;
+          qs.push({ type:'wall', wallLeft: (missing==='left'? null : left), wallRight: (missing==='right'? null : right),
+            wallTop: (missing==='top'? null : top), answer: ans, hint: 'Die beiden unteren Steine ergeben zusammen den oberen Stein!' });
+        }
+        return qs;
+      }
+    },
+    { id:'vergleichen', name:'Zahlen vergleichen', icon:'\u2696\uFE0F', color:'purple', accent:'#7E57C2',
+      make: function() {
+        var qs = [];
+        for (var i = 0; i < 8; i++) {
+          var a = rnd(1,99), b = rnd(1,99);
+          while (a === b) b = rnd(1,99);
+          var correct = a < b ? '<' : '>';
+          qs.push({ emoji:'\u2696\uFE0F', text: a + '   ?   ' + b, hint:'Welches Zeichen passt: < , > oder =', answer: correct, type:'mc-text', wrongOptions: ['<','>','='].filter(function(x){return x!==correct;}) });
         }
         return qs;
       }
@@ -425,13 +465,27 @@
     el('feedback').innerHTML = '';
     el('next-btn').style.display = 'none';
 
-    // Clean up dual-zw rows and clock SVG
+    // Clean up dual-zw rows, clock SVG, and wall pyramid
     var oldZW = document.querySelectorAll('.zw-row');
     for (var i=0;i<oldZW.length;i++) oldZW[i].parentNode.removeChild(oldZW[i]);
     var oldClock = document.querySelectorAll('.clock-wrap');
     for (var i=0;i<oldClock.length;i++) oldClock[i].parentNode.removeChild(oldClock[i]);
+    var oldWall = document.querySelectorAll('.wall-wrap');
+    for (var i=0;i<oldWall.length;i++) oldWall[i].parentNode.removeChild(oldWall[i]);
 
-    if (q.type === 'clock') {
+    if (q.type === 'wall') {
+      el('question-emoji').textContent = '';
+      el('question-text').textContent = 'Welche Zahl fehlt in der Zahlenmauer?';
+      el('answers-grid').classList.add('hidden');
+      el('input-row').classList.remove('hidden');
+      el('numpad').classList.add('visible');
+      el('submit-btn').classList.add('visible');
+      insertWall(q);
+      var inp = el('answer-input');
+      inp.style.display = '';
+      inp.value = ''; inp.className = '';
+      setTimeout(function(){ inp.focus(); }, 80);
+    } else if (q.type === 'clock') {
       el('question-emoji').textContent = '';
       el('question-text').textContent = q.text || '';
       el('answers-grid').classList.remove('hidden');
@@ -507,6 +561,35 @@
       '</svg>';
 
     wrap.innerHTML = svg;
+    card.insertBefore(wrap, el('question-text'));
+  }
+
+  function insertWall(q) {
+    var card = el('question-card');
+    var wrap = document.createElement('div');
+    wrap.className = 'wall-wrap';
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:10px;';
+
+    function stone(value, isMissing) {
+      var s = document.createElement('div');
+      var bg = isMissing ? '#FFF3E0' : 'white';
+      var border = isMissing ? '#FFB300' : '#D7CCC8';
+      s.style.cssText = 'width:64px;height:52px;border-radius:12px;background:'+bg+';border:3px solid '+border+';display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:var(--ink);';
+      s.textContent = isMissing ? '?' : value;
+      return s;
+    }
+
+    var topRow = document.createElement('div');
+    topRow.style.cssText = 'display:flex;justify-content:center;';
+    topRow.appendChild(stone(q.wallTop, q.wallTop === null));
+
+    var bottomRow = document.createElement('div');
+    bottomRow.style.cssText = 'display:flex;gap:8px;justify-content:center;';
+    bottomRow.appendChild(stone(q.wallLeft, q.wallLeft === null));
+    bottomRow.appendChild(stone(q.wallRight, q.wallRight === null));
+
+    wrap.appendChild(topRow);
+    wrap.appendChild(bottomRow);
     card.insertBefore(wrap, el('question-text'));
   }
 
